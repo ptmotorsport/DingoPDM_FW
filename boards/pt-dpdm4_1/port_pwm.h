@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hal.h"
+#include "neopixel.h"
 
 //===============================================
 // Output PWM period callbacks
@@ -118,6 +119,37 @@ static const PWMConfig pwm9Cfg = {
         {PWM_OUTPUT_ACTIVE_HIGH, pwmOut4cb},
         {PWM_OUTPUT_DISABLED, NULL},
         {PWM_OUTPUT_DISABLED, NULL},
+        {PWM_OUTPUT_DISABLED, NULL}  
+    },
+    .cr2 = 0,
+    .bdtr = 0,
+    .dier = 0
+};
+
+// NeoPixel PWM configurations
+static const PWMConfig pwmNeoPixel1Cfg = {
+    .frequency = NEOPIXEL_PWM_FREQUENCY,
+    .period = NEOPIXEL_PWM_PERIOD,
+    .callback = NULL,
+    .channels = {
+        {PWM_OUTPUT_ACTIVE_HIGH, NULL},  // TIM1_CH1 on PA8
+        {PWM_OUTPUT_DISABLED, NULL},
+        {PWM_OUTPUT_DISABLED, NULL},
+        {PWM_OUTPUT_DISABLED, NULL}  
+    },
+    .cr2 = 0,
+    .bdtr = 0,
+    .dier = 0
+};
+
+static const PWMConfig pwmNeoPixel2Cfg = {
+    .frequency = NEOPIXEL_PWM_FREQUENCY,
+    .period = NEOPIXEL_PWM_PERIOD,
+    .callback = NULL,
+    .channels = {
+        {PWM_OUTPUT_DISABLED, NULL},
+        {PWM_OUTPUT_DISABLED, NULL},
+        {PWM_OUTPUT_ACTIVE_HIGH, NULL},  // TIM3_CH3 on PB10
         {PWM_OUTPUT_DISABLED, NULL}  
     },
     .cr2 = 0,

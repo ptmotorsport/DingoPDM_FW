@@ -153,6 +153,7 @@ CPPSRC = $(ALLCPPSRC) \
 				 input.cpp \
 				 led.cpp \
 				 mailbox.cpp \
+				 neopixel.cpp \
 				 pdm.cpp \
 				 pwm.cpp \
 				 profet.cpp \

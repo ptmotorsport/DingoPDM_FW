@@ -20,4 +20,8 @@ Led errorLed = Led(LedType::Error);
 
 MCP9808 tempSensor(I2CD1, MCP9808_I2CADDR_DEFAULT);
 
+// NeoPixel strips: PA8 on TIM1_CH1, PB10 on TIM3_CH3
+NeoPixel neoPixel1(&PWMD1, 0);  // TIM1_CH1 (PA8)
+NeoPixel neoPixel2(&PWMD3, 2);  // TIM3_CH3 (PB10)
+
 #endif

@@ -2,6 +2,7 @@
 #include "ch.hpp"
 #include "hal.h"
 #include "port.h"
+#include "port_pwm.h"
 #include "mcu_utils.h"
 #include "dingopdm_config.h"
 #include "config.h"
@@ -60,6 +61,7 @@ bool GetAnyFault();
 bool CheckEnterSleep();
 void EnterSleep();
 void EnableLineEventWithPull(ioline_t line, InputPull pull);
+void UpdateNeoPixels();
 
 static InfoMsg StateRunMsg(MsgType::Info, MsgSrc::State_Run);
 static InfoMsg StateSleepMsg(MsgType::Info, MsgSrc::State_Sleep);
@@ -111,6 +113,9 @@ struct SlowThread : chibios_rt::BaseStaticThread<256>
             bDeviceOverTemp = tempSensor.OverTempLimit();
             bDeviceCriticalTemp = tempSensor.CritTempLimit();
 
+            // Update NeoPixel status LEDs
+            UpdateNeoPixels();
+
             // palToggleLine(LINE_E2);
             chThdSleepMilliseconds(250);
         }
@@ -143,6 +148,10 @@ void InitPdm()
 
     if (!tempSensor.Init(BOARD_TEMP_WARN, BOARD_TEMP_CRIT))
         Error::SetFatalError(FatalErrorType::ErrTempSensor, MsgSrc::Init);
+
+    // Initialize NeoPixel strips (using GPIO bit-bang, not PWM)
+    neoPixel1.Init();
+    neoPixel2.Init();
 
     InitInfoMsgs();
 
@@ -840,5 +849,76 @@ void EnterSleep()
     palEnableLineEvent(LINE_USB_DM, PAL_EVENT_MODE_BOTH_EDGES | PAL_STM32_PUPDR_FLOATING);
 
     EnterStopMode();
+}
+
+void UpdateNeoPixels()
+{
+    // LED1: Power - Green when on
+    neoPixel1.SetPixel(static_cast<uint8_t>(NeoPixelLED::Power), NeoPixelColor::Green());
+    neoPixel2.SetPixel(static_cast<uint8_t>(NeoPixelLED::Power), NeoPixelColor::Green());
+
+    // LED2: Temperature - Green <90°C, Red >=90°C
+    if (fTempSensor >= 90.0f)
+    {
+        neoPixel1.SetPixel(static_cast<uint8_t>(NeoPixelLED::Temp), NeoPixelColor::Red());
+        neoPixel2.SetPixel(static_cast<uint8_t>(NeoPixelLED::Temp), NeoPixelColor::Red());
+    }
+    else
+    {
+        neoPixel1.SetPixel(static_cast<uint8_t>(NeoPixelLED::Temp), NeoPixelColor::Green());
+        neoPixel2.SetPixel(static_cast<uint8_t>(NeoPixelLED::Temp), NeoPixelColor::Green());
+    }
+
+    // LED3: CAN - White when receiving messages, off when no activity
+    // TODO: Track CAN activity - for now keep it off
+    neoPixel1.SetPixel(static_cast<uint8_t>(NeoPixelLED::CAN), NeoPixelColor::Off());
+    neoPixel2.SetPixel(static_cast<uint8_t>(NeoPixelLED::CAN), NeoPixelColor::Off());
+
+    // LED4: Error - Red when error, off when OK
+    if (eError != FatalErrorType::NoError)
+    {
+        neoPixel1.SetPixel(static_cast<uint8_t>(NeoPixelLED::Error), NeoPixelColor::Red());
+        neoPixel2.SetPixel(static_cast<uint8_t>(NeoPixelLED::Error), NeoPixelColor::Red());
+    }
+    else
+    {
+        neoPixel1.SetPixel(static_cast<uint8_t>(NeoPixelLED::Error), NeoPixelColor::Off());
+        neoPixel2.SetPixel(static_cast<uint8_t>(NeoPixelLED::Error), NeoPixelColor::Off());
+    }
+
+    // LED5-8: Output monitors
+    for (uint8_t i = 0; i < PDM_NUM_OUTPUTS; i++)
+    {
+        uint8_t ledIndex = static_cast<uint8_t>(NeoPixelLED::Output1) + i;
+        NeoPixelColor color;
+
+        ProfetState state = pf[i].GetState();
+        switch (state)
+        {
+            case ProfetState::Off:
+                color = NeoPixelColor::Off();
+                break;
+            case ProfetState::On:
+                // Green if normal operation
+                if (pf[i].GetOcCount() == 0)
+                    color = NeoPixelColor::Green();
+                else
+                    color = NeoPixelColor::Amber(); // Amber if had overcurrent but recovered
+                break;
+            case ProfetState::Overcurrent:
+                color = NeoPixelColor::Red();
+                break;
+            default:
+                color = NeoPixelColor::Off();
+                break;
+        }
+
+        neoPixel1.SetPixel(ledIndex, color);
+        neoPixel2.SetPixel(ledIndex, color);
+    }
+
+    // Update both NeoPixel strings
+    neoPixel1.Show();
+    neoPixel2.Show();
 }
 
