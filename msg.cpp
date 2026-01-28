@@ -35,11 +35,11 @@ CANTxMsg TxMsg0()
 {
     CANTxMsg stMsg;
     //=======================================================
-    // Build Msg 0 (Digital inputs 1-2) and Device Status
+    // Build Msg 0 (Digital inputs 1-4) and Device Status
     //=======================================================
     stMsg.frame.SID = stConfig.stCanOutput.nBaseId + 0;
     stMsg.frame.DLC = 8; // Bytes to send
-    stMsg.frame.data8[0] = (GetInputVal(1) << 1) + GetInputVal(0);
+    stMsg.frame.data8[0] = (GetInputVal(3) << 3) + (GetInputVal(2) << 2) + (GetInputVal(1) << 1) + GetInputVal(0);
     stMsg.frame.data8[1] = static_cast<uint8_t>(GetPdmState()) + (PDM_TYPE << 4);
     stMsg.frame.data16[1] = (uint16_t)GetTotalCurrent(); //Already scaled by 10
     stMsg.frame.data16[2] = (uint16_t)(GetBattVolt() * 10.0);
