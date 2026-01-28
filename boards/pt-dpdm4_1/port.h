@@ -15,7 +15,9 @@
 #define PDM_NUM_COUNTERS 4
 #define PDM_NUM_CONDITIONS 32
 
-#define PDM_VAR_MAP_SIZE 134
+// Var map size: Keep compatibility with config software by adding DI3-4 at end
+// 0 (None) + 2 (DI1-2) + 32 (CAN In) + 32 (CAN Val) + 16 (Virt) + 4 (Out) + 2 (Wiper) + 4 (Flash) + 4 (Count) + 32 (Cond) + 1 (Always) + 2 (DI3-4) = 131 + 1 + 2 = 136
+#define PDM_VAR_MAP_SIZE 136
 
 #define PDM_NUM_TX_MSGS 16
 

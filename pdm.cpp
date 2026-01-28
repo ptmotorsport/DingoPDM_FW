@@ -283,7 +283,7 @@ void InitVarMap()
     pVarMap[0] = const_cast<uint16_t*>(&ALWAYS_FALSE);
 
     // 1-2
-    // Digital inputs
+    // Digital inputs 1-2 (keep at original positions for config software compatibility)
     pVarMap[1] = &in[0].nVal;
     pVarMap[2] = &in[1].nVal;
 
@@ -301,22 +301,21 @@ void InitVarMap()
         pVarMap[i + 35] = &canIn[i].nVal;
     }
 
-    // 67-84
+    // 67-82
     // Virtual Inputs
     for (uint8_t i = 0; i < PDM_NUM_VIRT_INPUTS; i++)
     {
         pVarMap[i + 67] = &virtIn[i].nVal;
     }
 
-    // 83-90
+    // 83-86
     // Outputs
     for (uint8_t i = 0; i < PDM_NUM_OUTPUTS; i++)
     {
         pVarMap[i + 83] = &pf[i].nOutput;
     }
 
-    //dingoPDM-Max
-    //Var map 87-90 are not used
+    //87-90 unused on pt-dpdm4_1
 
     // 91-92
     // Wiper
@@ -337,7 +336,7 @@ void InitVarMap()
         pVarMap[i + 97] = &counter[i].nVal;
     }
 
-    // 101 - 132
+    // 101-132
     // Conditions
     for (uint8_t i = 0; i < PDM_NUM_CONDITIONS; i++)
     {
@@ -347,6 +346,15 @@ void InitVarMap()
     // 133
     // Always true
     pVarMap[133] = const_cast<uint16_t*>(&ALWAYS_TRUE);
+
+    // 134-135
+    // Digital inputs 3-4 (added at end for config software compatibility)
+    #if PDM_NUM_INPUTS > 2
+    pVarMap[134] = &in[2].nVal;
+    #if PDM_NUM_INPUTS > 3
+    pVarMap[135] = &in[3].nVal;
+    #endif
+    #endif
 }
 
 void ApplyAllConfig()
@@ -835,8 +843,19 @@ void EnterSleep()
     // Set wakeup sources
 
     // Digital inputs change detection, with configured pullup or pulldown
-    EnableLineEventWithPull(LINE_DI1, stConfig.stInput[0].ePull);
-    EnableLineEventWithPull(LINE_DI2, stConfig.stInput[1].ePull);
+    for (uint8_t i = 0; i < PDM_NUM_INPUTS; i++)
+    {
+        ioline_t line = 0;
+        if (i == 0) line = LINE_DI1;
+        else if (i == 1) line = LINE_DI2;
+        #if PDM_NUM_INPUTS > 2
+        else if (i == 2) line = LINE_DI3;
+        else if (i == 3) line = LINE_DI4;
+        #endif
+        
+        if (line != 0)
+            EnableLineEventWithPull(line, stConfig.stInput[i].ePull);
+    }
 
     // CAN receive detection
     palSetLineMode(LINE_CAN_RX, PAL_MODE_INPUT);
