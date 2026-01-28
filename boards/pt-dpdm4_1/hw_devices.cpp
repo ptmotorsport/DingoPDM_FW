@@ -1,7 +1,7 @@
 #include "hw_devices.h"
 #include "port_pwm.h"
 
-#if PDM_TYPE == 1
+#if PDM_TYPE == 2
 Profet pf[PDM_NUM_OUTPUTS] = {
     Profet(1, ProfetModel::BTS70012_1ESP, LINE_PF1_IN, LINE_PF1_DEN, LINE_UNUSED, AnalogChannel::IS1, &PWMD3, &pwm3Cfg, PwmChannel::Ch1),
     Profet(2, ProfetModel::BTS70012_1ESP, LINE_PF2_IN, LINE_PF2_DEN, LINE_UNUSED, AnalogChannel::IS2, &PWMD4, &pwm4Cfg, PwmChannel::Ch1),

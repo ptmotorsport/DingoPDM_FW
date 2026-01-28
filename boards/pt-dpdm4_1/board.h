@@ -29,7 +29,7 @@
 /*
  * Board identifier.
  */
-#define BOARD_NAME                  "PT-DPDM4.1"
+#define BOARD_NAME                  "Dingo Electronics dingoPDM-Max v1"
 
 /*
  * Board oscillators-related settings.
@@ -214,8 +214,6 @@
 #define LINE_DI2                    PAL_LINE(GPIOC, 9U)
 #define LINE_DI3                    PAL_LINE(GPIOA, 2U)
 #define LINE_DI4                    PAL_LINE(GPIOC, 4U)
-#define LINE_NEOPIXEL1              PAL_LINE(GPIOB, 10U)
-#define LINE_NEOPIXEL2              PAL_LINE(GPIOA, 8U)
 #define LINE_LED_ERROR              PAL_LINE(GPIOC, 0U)
 #define LINE_LED_STATUS             PAL_LINE(GPIOC, 1U)
 #define LINE_BATT_SENSE             PAL_LINE(GPIOA, 3U)
@@ -278,7 +276,7 @@
  *
  * PA0  - PF3_IS                    (analog in).
  * PA1  - PF4_IS                    (analog in).
- * PA2  -                           (input pullup).
+ * PA2  - DIG_IN3                   (input pullup).
  * PA3  - BATT_SENSE                (analog in).
  * PA4  -                           (input pullup).
  * PA5  - PF4_DEN                   (output pushpull pulldown).
@@ -514,7 +512,7 @@
  * PC1  - STATUS_LED                (output pushpull pulldown).
  * PC2  - PF2_IS                    (analog input).
  * PC3  - PF1_IS                    (analog input).
- * PC4  -                           (input pullup).
+ * PC4  - DIG_IN4                   (input pullup).
  * PC5  - PF3_DEN                   (output pushpull pulldown).
  * PC6  - PF2_DEN                   (output pushpull pulldown).
  * PC7  - PF2_IN                    (output pushpull pulldown).

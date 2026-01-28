@@ -3,7 +3,7 @@
 #include "hal.h"
 #include "enums.h"
 
-#define PDM_TYPE 1 //0 = PDM, 1 = PDM-MAX 
+#define PDM_TYPE 2 //0 = PDM, 1 = PDM-MAX, 2 = PT-DPDM4-1
 
 #define PDM_NUM_OUTPUTS 4
 #define PDM_NUM_INPUTS 4
