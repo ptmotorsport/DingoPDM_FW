@@ -342,3 +342,79 @@ CANTxMsg TxMsg15()
 
     return stMsg;
 }
+
+CANTxMsg TxMsg16()
+{
+    CANTxMsg stMsg;
+    stMsg.frame.SID = stConfig.stCanOutput.nBaseId + 16;
+    stMsg.frame.DLC = 8;
+    stMsg.frame.data8[0] = 0;
+    stMsg.frame.data8[1] = 0;
+    stMsg.frame.data8[2] = 0;
+    stMsg.frame.data8[3] = 0;
+    stMsg.frame.data8[4] = 0;
+    stMsg.frame.data8[5] = 0;
+    stMsg.frame.data8[6] = 0;
+    stMsg.frame.data8[7] = 0;
+
+    stMsg.bSend = false; // Reserved for future use
+
+    return stMsg;
+}
+
+CANTxMsg TxMsg17()
+{
+    CANTxMsg stMsg;
+    stMsg.frame.SID = stConfig.stCanOutput.nBaseId + 17;
+    stMsg.frame.DLC = 8;
+    stMsg.frame.data8[0] = 0;
+    stMsg.frame.data8[1] = 0;
+    stMsg.frame.data8[2] = 0;
+    stMsg.frame.data8[3] = 0;
+    stMsg.frame.data8[4] = 0;
+    stMsg.frame.data8[5] = 0;
+    stMsg.frame.data8[6] = 0;
+    stMsg.frame.data8[7] = 0;
+
+    stMsg.bSend = false; // Reserved for future use
+
+    return stMsg;
+}
+
+CANTxMsg TxMsg18()
+{
+    CANTxMsg stMsg;
+    stMsg.frame.SID = stConfig.stCanOutput.nBaseId + 18;
+    stMsg.frame.DLC = 8;
+    stMsg.frame.data8[0] = 0;
+    stMsg.frame.data8[1] = 0;
+    stMsg.frame.data8[2] = 0;
+    stMsg.frame.data8[3] = 0;
+    stMsg.frame.data8[4] = 0;
+    stMsg.frame.data8[5] = 0;
+    stMsg.frame.data8[6] = 0;
+    stMsg.frame.data8[7] = 0;
+
+    stMsg.bSend = false; // Reserved for future use
+
+    return stMsg;
+}
+
+CANTxMsg TxMsg19()
+{
+    CANTxMsg stMsg;
+    stMsg.frame.SID = stConfig.stCanOutput.nBaseId + 19;
+    stMsg.frame.DLC = 8;
+    stMsg.frame.data8[0] = GetOutputDamage(0);
+    stMsg.frame.data8[1] = GetOutputDamage(1);
+    stMsg.frame.data8[2] = GetOutputDamage(2);
+    stMsg.frame.data8[3] = GetOutputDamage(3);
+    stMsg.frame.data8[4] = GetOutputDamage(4);
+    stMsg.frame.data8[5] = GetOutputDamage(5);
+    stMsg.frame.data8[6] = GetOutputDamage(6);
+    stMsg.frame.data8[7] = GetOutputDamage(7);
+
+    stMsg.bSend = true; // Always send
+
+    return stMsg;
+}

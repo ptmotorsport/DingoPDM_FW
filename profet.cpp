@@ -119,34 +119,117 @@ void Profet::Update(bool bOutEnabled)
         break;
 
     case ProfetState::On:
-        if (pwm.IsEnabled())
-            pwm.On();
-        else
-            palSetLine(m_in);
-
-        // Check for turn off
-        if (eReqState == ProfetState::Off)
         {
-            eState = ProfetState::Off;
+            if (pwm.IsEnabled())
+                pwm.On();
+            else
+                palSetLine(m_in);
+
+            // Check for turn off
+            if (eReqState == ProfetState::Off)
+            {
+                eState = ProfetState::Off;
+            }
+
+            // I²t fuse damage calculation
+            // Calculate time delta since last update
+            uint32_t nCurrentTime = SYS_TIME;
+            float fDeltaT = (float)(nCurrentTime - nLastDamageUpdateTime) / 1000.0f; // Convert to seconds
+            nLastDamageUpdateTime = nCurrentTime;
+
+        // Normal operation overcurrent (not in inrush period)
+        if (!bInRushActive)
+        {
+            if (pConfig->nFuseDamageLimit == 0)
+            {
+                // I²t disabled, use hard threshold
+                if (nCurrent > pConfig->nCurrentLimit)
+                {
+                    nOcTriggerTime = SYS_TIME;
+                    nOcCount++;
+                    eState = ProfetState::Overcurrent;
+                }
+                else
+                {
+                    fDamageAccumulated = 0.0f; // Reset damage when under limit
+                }
+            }
+            else
+            {
+                // I²t enabled
+                if (nCurrent > pConfig->nCurrentLimit)
+                {
+                    // Overcurrent detected - accumulate damage
+                    float fCurrent = (float)nCurrent / 10.0f; // Convert to amps
+                    float fLimit = (float)pConfig->nCurrentLimit / 10.0f;
+                    float fOvercurrent = fCurrent - fLimit;
+                    
+                    // Accumulate I²t damage: ΔDamage = (Overcurrent)² × Δt
+                    fDamageAccumulated += (fOvercurrent * fOvercurrent) * fDeltaT;
+                    
+                    // Check if damage threshold exceeded
+                    if (fDamageAccumulated >= fDamageThreshold)
+                    {
+                        nOcTriggerTime = SYS_TIME;
+                        nOcCount++;
+                        eState = ProfetState::Overcurrent;
+                    }
+                }
+                else
+                {
+                    // Current is normal - reset damage counter
+                    fDamageAccumulated = 0.0f;
+                }
+            }
         }
 
-        // Overcurrent
-        if (nCurrent > pConfig->nCurrentLimit && !bInRushActive)
+        // Inrush overcurrent (during inrush period)
+        if (bInRushActive)
         {
-            nOcTriggerTime = SYS_TIME;
-            nOcCount++;
-            eState = ProfetState::Overcurrent;
+            if (pConfig->nInrushFuseDamageLimit == 0)
+            {
+                // I²t disabled for inrush, use hard threshold
+                if (nCurrent > pConfig->nInrushLimit)
+                {
+                    nOcTriggerTime = SYS_TIME;
+                    nOcCount++;
+                    eState = ProfetState::Overcurrent;
+                }
+                else
+                {
+                    fInrushDamageAccumulated = 0.0f; // Reset damage when under limit
+                }
+            }
+            else
+            {
+                // I²t enabled for inrush
+                if (nCurrent > pConfig->nInrushLimit)
+                {
+                    // Inrush overcurrent - accumulate damage
+                    float fCurrent = (float)nCurrent / 10.0f; // Convert to amps
+                    float fLimit = (float)pConfig->nInrushLimit / 10.0f;
+                    float fOvercurrent = fCurrent - fLimit;
+                    
+                    // Accumulate I²t damage: ΔDamage = (Overcurrent)² × Δt
+                    fInrushDamageAccumulated += (fOvercurrent * fOvercurrent) * fDeltaT;
+                    
+                    // Check if damage threshold exceeded
+                    if (fInrushDamageAccumulated >= fInrushDamageThreshold)
+                    {
+                        nOcTriggerTime = SYS_TIME;
+                        nOcCount++;
+                        eState = ProfetState::Overcurrent;
+                    }
+                }
+                else
+                {
+                    // Current is normal - reset inrush damage counter
+                    fInrushDamageAccumulated = 0.0f;
+                }
+            }
         }
-
-        // Inrush overcurrent
-        if (nCurrent > pConfig->nInrushLimit && bInRushActive)
-        {
-            nOcTriggerTime = SYS_TIME;
-            nOcCount++;
-            eState = ProfetState::Overcurrent;
-        }
-
         break;
+        }
 
     case ProfetState::Overcurrent:
         pwm.Off();
@@ -197,6 +280,8 @@ MsgCmdResult Profet::ProcessSettingsMsg(PdmConfig *conf, CANRxFrame *rx, CANTxFr
 {
     // DLC 8 = Set output settings
     // DLC 2 = Get output settings
+    // TODO: Add separate message for I²t fuse parameters (nFuseDamageLimit, nInrushFuseDamageLimit)
+    //       Current message uses all 8 bytes. New message needed for extended config.
 
     if ((rx->DLC == 8) ||
         (rx->DLC == 2))

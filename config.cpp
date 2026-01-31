@@ -97,6 +97,8 @@ void SetDefaultConfig()
         stConfig.stOutput[i].eResetMode = ProfetResetMode::None;
         stConfig.stOutput[i].nResetTime = 1000;
         stConfig.stOutput[i].nResetLimit = 0;
+        stConfig.stOutput[i].nFuseDamageLimit = 50;       // Default: 5.0s @ 200% (normal ATO fuse behavior)
+        stConfig.stOutput[i].nInrushFuseDamageLimit = 10; // Default: 1.0s @ 200% (fast blow for inrush)
     }
 
     stConfig.stWiper.bEnabled = false;

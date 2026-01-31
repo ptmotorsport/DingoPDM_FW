@@ -636,6 +636,13 @@ uint8_t GetOutputDC(uint8_t nOutput)
     return pf[nOutput].GetDutyCycle();
 }
 
+uint8_t GetOutputDamage(uint8_t nOutput)
+{
+    if (nOutput >= PDM_NUM_OUTPUTS)
+        return 0;
+
+    return pf[nOutput].GetDamagePercent();
+}
 bool GetAnyCanInEnable()
 {
     for (uint8_t i = 0; i < PDM_NUM_CAN_INPUTS; i++)
@@ -918,13 +925,16 @@ void UpdateNeoPixels()
                 color = NeoPixelColor::Off();
                 break;
             case ProfetState::On:
-                // Green if normal operation
-                if (pf[i].GetOcCount() == 0)
-                    color = NeoPixelColor::Green();
+                // Green if normal operation, Amber if damage accumulating
+                if (pf[i].GetDamageAccumulated() > 1.0f)
+                    color = NeoPixelColor::Amber();
                 else
-                    color = NeoPixelColor::Amber(); // Amber if had overcurrent but recovered
+                    color = NeoPixelColor::Green();
                 break;
             case ProfetState::Overcurrent:
+                color = NeoPixelColor::Amber();
+                break;
+            case ProfetState::Fault:
                 color = NeoPixelColor::Red();
                 break;
             default:

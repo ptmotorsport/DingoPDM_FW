@@ -13,6 +13,7 @@ uint16_t GetOutputCurrent(uint8_t nOutput);
 ProfetState GetOutputState(uint8_t nOutput);
 uint8_t GetOutputOcCount(uint8_t nOutput);
 uint8_t GetOutputDC(uint8_t nOutput);
+uint8_t GetOutputDamage(uint8_t nOutput);
 bool GetAnyCanInEnable();
 bool GetCanInEnable(uint8_t nInput);
 bool GetCanInOutput(uint8_t nInput);

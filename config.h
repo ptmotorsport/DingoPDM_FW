@@ -55,6 +55,8 @@ struct Config_Output{
   ProfetResetMode eResetMode;
   uint16_t nResetTime;
   uint8_t nResetLimit;
+  uint16_t nFuseDamageLimit;       // I²t multiplier for normal operation (default=50, 0=disabled)
+  uint16_t nInrushFuseDamageLimit; // I²t multiplier for inrush (default=10, 0=use hard threshold)
 
   Config_PwmOutput stPwm;
 };

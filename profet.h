@@ -64,6 +64,20 @@ public:
         pInput = pVarMap[config->nInput];
 
         pwm.SetConfig(&config->stPwm, pVarMap);
+
+        // Calculate I²t damage thresholds based on config
+        // Threshold = (current_limit)² × (multiplier / 10.0)
+        // Example: 10A limit, multiplier 50 → threshold = (10)² × 5.0 = 500 A²·s
+        float fCurrentLimit = (float)(pConfig->nCurrentLimit) / 10.0f; // Convert from A×10 to A
+        float fInrushLimit = (float)(pConfig->nInrushLimit) / 10.0f;
+        
+        fDamageThreshold = (fCurrentLimit * fCurrentLimit) * ((float)pConfig->nFuseDamageLimit / 10.0f);
+        fInrushDamageThreshold = (fInrushLimit * fInrushLimit) * ((float)pConfig->nInrushFuseDamageLimit / 10.0f);
+        
+        // Initialize damage accumulators
+        fDamageAccumulated = 0.0f;
+        fInrushDamageAccumulated = 0.0f;
+        nLastDamageUpdateTime = SYS_TIME;
     }
 
     void Update(bool bOutEnabled);
@@ -78,6 +92,18 @@ public:
 
         return 0;
     };
+    uint8_t GetDamagePercent()
+    {
+        if (fDamageThreshold <= 0.0f)
+            return 0;
+        
+        uint8_t nPercent = (uint8_t)(254.0f * fDamageAccumulated / fDamageThreshold);
+        if (nPercent > 254)
+            nPercent = 254;
+        
+        return nPercent;
+    };
+    float GetDamageAccumulated() { return fDamageAccumulated; };
 
     static MsgCmdResult ProcessSettingsMsg(PdmConfig *conf, CANRxFrame *rx, CANTxFrame *tx);
 
@@ -112,6 +138,13 @@ private:
 
     uint16_t nOcCount;       // Number of overcurrents
     uint32_t nOcTriggerTime; // Time of overcurrent
+
+    // I²t fuse damage tracking
+    float fDamageAccumulated;        // Normal operation damage (A²·s)
+    float fDamageThreshold;          // Normal operation trip threshold (A²·s)
+    float fInrushDamageAccumulated;  // Inrush damage (A²·s)
+    float fInrushDamageThreshold;    // Inrush trip threshold (A²·s)
+    uint32_t nLastDamageUpdateTime;  // Last damage calculation time (ms)
 
     Pwm pwm;
     uint16_t nPwmReadDelay = 0;
